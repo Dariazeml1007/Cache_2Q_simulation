@@ -1,12 +1,10 @@
 #ifndef CACHE_BASE_HPP
 #define CACHE_BASE_HPP
 
-#include <cstddef>
-#include <iostream>
-#include <vector>
-#include <list>
-#include <algorithm>
-#include <unordered_map>
+// Now it is necessary to keep track of the libraries that i connect to hpp
+#include <cstddef>       // для size_t
+#include <list>          // для std::list
+#include <unordered_map> // для std::unordered_map
 
 using KeyType = int;
 
