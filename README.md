@@ -23,7 +23,6 @@ The 2Q algorithm is an enhanced alternative to LRU that separates items into "on
 - `cache_2q.hpp` — Main cache structure and method declarations.
 - `cache_2q.cpp` — Method implementations (`get`, `putNew`, `putOld`).
 - `main.cpp` — Entry point, data input, and cache execution.
-- `tests_2q.hpp` — Standalone test suite for logic verification.
 
 ---
 
