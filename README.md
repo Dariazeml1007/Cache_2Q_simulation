@@ -1,30 +1,32 @@
-# Симулятор кэша 2Q
+# 2Q Cache Simulator
 
-Реализация алгоритма замещения **2Q (Two-Queue)** на C++.  
+A C++ implementation of the **2Q (Two-Queue)** cache replacement algorithm.
 
-Алгоритм 2Q — улучшенная альтернатива LRU, которая разделяет элементы на "одноразовые" и "часто используемые".
-
----
-
-## 🔧 Возможности
-
-- Реализация классического алгоритма **2Q**:
-  - `A1in`: FIFO-очередь для новых (одноразовых) обращений.
-  - `Am`: LRU-очередь для "горячих", часто используемых элементов.
-- Быстрый доступ за O(1) в среднем с использованием хеш-таблицы (`std::unordered_map`).
-- Контроль размера кэша: `size_a1in = N/2`, `size_am = N/2`.
-- Подсчёт количества попаданий (`hits`) для оценки эффективности.
-- Встроенная система тестирования.
+The 2Q algorithm is an enhanced alternative to LRU that separates items into "one-time" and "frequently used" categories.
 
 ---
 
-## 📦 Структура проекта
+## 🔧 Features
 
-- `cache_2q.hpp` — основная структура кэша и объявления методов.
-- `cache_2q.cpp` — реализация методов (`get`, `putNew`, `putOld`).
-- `main.cpp` — точка входа, ввод данных и запуск кэша.
-- `tests_2q.hpp` — набор автономных тестов для проверки логики.
+- Implementation of the classic **2Q algorithm**:
+  - `A1in`: FIFO queue for new (one-time) accesses.
+  - `Am`: LRU queue for "hot", frequently used items.
+- Fast O(1) average access using a hash table (`std::unordered_map`).
+- Cache size control: `size_a1in = N/2`, `size_am = N/2`.
+- Hit count tracking (`hits`) for efficiency evaluation.
+- Built-in testing system.
 
 ---
-## Комментарии
-- Комментарии отражают мой переход как личности программиста с языка си к языку с++
+
+## 📦 Project Structure
+
+- `cache_2q.hpp` — Main cache structure and method declarations.
+- `cache_2q.cpp` — Method implementations (`get`, `putNew`, `putOld`).
+- `main.cpp` — Entry point, data input, and cache execution.
+- `tests_2q.hpp` — Standalone test suite for logic verification.
+
+---
+
+## 💡 Personal Notes
+
+- The comments reflect my personal transition as a programmer from C to C++.
