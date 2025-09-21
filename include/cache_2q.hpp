@@ -34,10 +34,10 @@ struct CacheBase
     std::list<CacheEntry> am_queue;    // LRU
 
     std::unordered_map<KeyType, EntryInfo> cacheMap;
-    // Размеры
-    size_t size_a1in ;
-    size_t size_am   ;
-    size_t hits     ;
+
+    size_t size_a1in;
+    size_t size_am ;
+    size_t hits;
 
 
        // Конструктор

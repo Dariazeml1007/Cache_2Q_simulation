@@ -19,7 +19,10 @@ bool CacheBase::get(KeyType key)
     else
     {
         hits++;
-        EntryInfo& info = it->second;
+        // Get metadata about the element's location
+        EntryInfo& info = it->second;  // C++: reference avoids copying
+                                       // In C: pointer to entry in hash bucket
+
 
         if (info.queue_type == IN_QUEUE)
         {
@@ -28,7 +31,10 @@ bool CacheBase::get(KeyType key)
         }
         else
         {
+            // Element is already in Am -> update LRU: move to end
             am_queue.splice(am_queue.end(), am_queue, info.iter);
+            // C++: splice moves without copying or memory allocation
+            // In C: would manually remove and reinsert node
         }
 
     }
@@ -40,7 +46,8 @@ void CacheBase::putOld(KeyType key)
 {
 
     am_queue.push_back({key});
-    auto new_it = std::prev(am_queue.end());
+
+    auto new_it = std::prev(am_queue.end());// Get iterator to newly added element
     cacheMap[key] = {new_it, HOT_QUEUE};
 
 

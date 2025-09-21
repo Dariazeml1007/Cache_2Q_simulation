@@ -17,12 +17,13 @@ void run_test(int test_num, size_t cache_size, const std::vector<int>& sequence,
     if (cache.hits == expected_hits)
     {
         std::cout << "Test " << test_num << " passed: got " << cache.hits << " hits\n";
-    } else
+    }
+    else
     {
         std::cout << "Test " << test_num << " FAILED: expected " << expected_hits
                   << ", but got " << cache.hits << "\n";
     }
-    std::cout << cache.size_a1in <<" "<< cache.size_am <<"\n";
+    //std::cout << cache.size_a1in <<" "<< cache.size_am <<"\n";
 }
 
 void run_all_tests()
