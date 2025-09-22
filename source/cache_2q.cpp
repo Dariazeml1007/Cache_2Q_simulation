@@ -4,89 +4,79 @@
 #include <algorithm>
 #include <unordered_map>
 
-#include "cache_2q.hpp"
+#include "ideal_cache.hpp"
 
+// Comment for tests
+#define RUN_USER_INPUT
 
-bool CacheBase::get(KeyType key)
+void get_cache_arguments(size_t* cache_size, std::vector<int>* elements);
+void run_test(int test_num, size_t cache_size, const std::vector<int>& sequence, size_t expected_hits);
+void run_all_tests();
+
+int main()
 {
-    auto it = cacheMap.find(key);
+#ifdef RUN_USER_INPUT
+    // Mode: keyboard input
+    size_t cache_size;
+    std::vector<int> elements;
 
-    if (it == cacheMap.end())
+    get_cache_arguments(&cache_size, &elements);
+
+    // Create ideal cache with the sequence
+    IdealCache<int> cache(cache_size, elements);
+    size_t hits = cache.run();
+
+    std::cout << hits << "\n";
+#else
+    // Mode: tests
+    run_all_tests();
+#endif
+
+    return 0;
+}
+
+void get_cache_arguments(size_t* cache_size, std::vector<int>* elements)
+{
+    size_t amount_of_elems;
+    std::cin >> *cache_size >> amount_of_elems; // no need to use type-specifiers!!!
+
+    elements->resize(amount_of_elems); // wow, finally a safe extension...
+
+    for (size_t i = 0; i < amount_of_elems; i++)
     {
-        CacheBase::putNew(key);
-        return false;
+        std::cin >> (*elements)[i];
+    }
+}
+
+void run_test(int test_num, size_t cache_size, const std::vector<int>& sequence, size_t expected_hits)
+{
+    IdealCache<int> cache(cache_size, sequence);
+    size_t hits = cache.run();
+
+    if (hits == expected_hits)
+    {
+        std::cout << "Test " << test_num << " passed: got " << hits << " hits\n";
     }
     else
     {
-        hits++;
-        // Get metadata about the element's location
-        EntryInfo& info = it->second;  // C++: reference avoids copying
-                                       // In C: pointer to entry in hash bucket
-
-
-        if (info.queue_type == IN_QUEUE)
-        {
-            a1in_queue.erase(info.iter);
-            CacheBase::putOld(key);
-        }
-        else
-        {
-            // Element is already in Am -> update LRU: move to end
-            am_queue.splice(am_queue.end(), am_queue, info.iter);
-            // C++: splice moves without copying or memory allocation
-            // In C: would manually remove and reinsert node
-        }
-
+        std::cerr << "Test " << test_num << " FAILED: expected " << expected_hits
+                  << ", but got " << hits << "\n";
     }
-    return true;
-
 }
 
-void CacheBase::putOld(KeyType key)
+void run_all_tests()
 {
+    std::cout << "=== Running Ideal Cache Tests ===\n\n";
 
-    am_queue.push_back({key});
+    run_test(1, 4, {1,2,3,1,4,2,5}, 2);
 
-    auto new_it = std::prev(am_queue.end());// Get iterator to newly added element
-    cacheMap[key] = {new_it, HOT_QUEUE};
+    run_test(2, 6, {1,2,3,1,2,3,4,5,6}, 3);
 
+    run_test(3, 4, {1,2,1,2,1,2,1,2}, 6);
 
-    if (am_queue.size() > size_am)
-    {
-        KeyType front_key = am_queue.front().key;
-        am_queue.pop_front();
-        cacheMap.erase(front_key);
-    }
+    run_test(4, 6, {1,2,3,4,4,5,2,3,3,7,8,9,1,2,3}, 8);
+
+    run_test(5, 8, {1,2,3,4,5,6,3,5,8,9,6,10,5,3,4,2}, 9);
+
+    std::cout << "=== Tests completed ===\n";
 }
-
-
-void CacheBase::putNew(KeyType key)
-{
-    // Create entry
-    CacheEntry entry;
-    entry.key = key;
-
-    // Add in the end of A1in
-    a1in_queue.push_back(entry);
-
-    // Get an iter on last element(new)
-    auto it = std::prev(a1in_queue.end());
-
-    //Add info to list A1in
-    EntryInfo info;
-    info.iter = it;
-    info.queue_type = IN_QUEUE;
-
-    //calculate hash; finds the bucket; looks for the key; if not - creates a new entry !!!
-    cacheMap[key] = info;
-
-    // Check if overflow - erase front
-    if (a1in_queue.size() > size_a1in)
-
-    {
-        KeyType front_key = a1in_queue.front().key;
-        a1in_queue.pop_front();
-        cacheMap.erase(front_key);
-    }
-}
-

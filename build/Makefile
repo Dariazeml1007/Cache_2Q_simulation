@@ -129,6 +129,19 @@ cache_2q/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_2q.dir/build.make CMakeFiles/cache_2q.dir/build
 .PHONY : cache_2q/fast
 
+#=============================================================================
+# Target rules for targets named cache_ideal
+
+# Build rule for target.
+cache_ideal: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cache_ideal
+.PHONY : cache_ideal
+
+# fast build rule for target.
+cache_ideal/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_ideal.dir/build.make CMakeFiles/cache_ideal.dir/build
+.PHONY : cache_ideal/fast
+
 source/cache_2q.o: source/cache_2q.cpp.o
 .PHONY : source/cache_2q.o
 
@@ -153,29 +166,29 @@ source/cache_2q.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_2q.dir/build.make CMakeFiles/cache_2q.dir/source/cache_2q.cpp.s
 .PHONY : source/cache_2q.cpp.s
 
-source/main.o: source/main.cpp.o
-.PHONY : source/main.o
+source/cache_ideal.o: source/cache_ideal.cpp.o
+.PHONY : source/cache_ideal.o
 
 # target to build an object file
-source/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_2q.dir/build.make CMakeFiles/cache_2q.dir/source/main.cpp.o
-.PHONY : source/main.cpp.o
+source/cache_ideal.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_ideal.dir/build.make CMakeFiles/cache_ideal.dir/source/cache_ideal.cpp.o
+.PHONY : source/cache_ideal.cpp.o
 
-source/main.i: source/main.cpp.i
-.PHONY : source/main.i
+source/cache_ideal.i: source/cache_ideal.cpp.i
+.PHONY : source/cache_ideal.i
 
 # target to preprocess a source file
-source/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_2q.dir/build.make CMakeFiles/cache_2q.dir/source/main.cpp.i
-.PHONY : source/main.cpp.i
+source/cache_ideal.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_ideal.dir/build.make CMakeFiles/cache_ideal.dir/source/cache_ideal.cpp.i
+.PHONY : source/cache_ideal.cpp.i
 
-source/main.s: source/main.cpp.s
-.PHONY : source/main.s
+source/cache_ideal.s: source/cache_ideal.cpp.s
+.PHONY : source/cache_ideal.s
 
 # target to generate assembly for a file
-source/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_2q.dir/build.make CMakeFiles/cache_2q.dir/source/main.cpp.s
-.PHONY : source/main.cpp.s
+source/cache_ideal.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_ideal.dir/build.make CMakeFiles/cache_ideal.dir/source/cache_ideal.cpp.s
+.PHONY : source/cache_ideal.cpp.s
 
 # Help Target
 help:
@@ -186,12 +199,13 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... cache_2q"
+	@echo "... cache_ideal"
 	@echo "... source/cache_2q.o"
 	@echo "... source/cache_2q.i"
 	@echo "... source/cache_2q.s"
-	@echo "... source/main.o"
-	@echo "... source/main.i"
-	@echo "... source/main.s"
+	@echo "... source/cache_ideal.o"
+	@echo "... source/cache_ideal.i"
+	@echo "... source/cache_ideal.s"
 .PHONY : help
 
 

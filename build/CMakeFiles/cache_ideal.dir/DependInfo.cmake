@@ -8,8 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/source/cache_2q.cpp" "CMakeFiles/cache_2q.dir/source/cache_2q.cpp.o" "gcc" "CMakeFiles/cache_2q.dir/source/cache_2q.cpp.o.d"
-  "" "cache_2q" "gcc" "CMakeFiles/cache_2q.dir/link.d"
+  "/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/source/cache_ideal.cpp" "CMakeFiles/cache_ideal.dir/source/cache_ideal.cpp.o" "gcc" "CMakeFiles/cache_ideal.dir/source/cache_ideal.cpp.o.d"
+  "" "cache_ideal" "gcc" "CMakeFiles/cache_ideal.dir/link.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

@@ -1,1 +1,1 @@
-/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/cache_2q.dir/link.d CMakeFiles/cache_2q.dir/source/cache_2q.cpp.o CMakeFiles/cache_2q.dir/source/main.cpp.o -o cache_2q
+/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/cache_2q.dir/link.d CMakeFiles/cache_2q.dir/source/cache_2q.cpp.o -o cache_2q

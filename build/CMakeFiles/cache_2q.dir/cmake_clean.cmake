@@ -2,8 +2,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/cache_2q.dir/link.d"
   "CMakeFiles/cache_2q.dir/source/cache_2q.cpp.o"
   "CMakeFiles/cache_2q.dir/source/cache_2q.cpp.o.d"
-  "CMakeFiles/cache_2q.dir/source/main.cpp.o"
-  "CMakeFiles/cache_2q.dir/source/main.cpp.o.d"
   "cache_2q"
   "cache_2q.pdb"
 )

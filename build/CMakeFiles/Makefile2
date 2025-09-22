@@ -64,10 +64,12 @@ CMAKE_BINARY_DIR = /mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulat
 
 # The main recursive "all" target.
 all: CMakeFiles/cache_2q.dir/all
+all: CMakeFiles/cache_ideal.dir/all
 .PHONY : all
 
 # The main recursive "codegen" target.
 codegen: CMakeFiles/cache_2q.dir/codegen
+codegen: CMakeFiles/cache_ideal.dir/codegen
 .PHONY : codegen
 
 # The main recursive "preinstall" target.
@@ -76,6 +78,7 @@ preinstall:
 
 # The main recursive "clean" target.
 clean: CMakeFiles/cache_2q.dir/clean
+clean: CMakeFiles/cache_ideal.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -85,12 +88,12 @@ clean: CMakeFiles/cache_2q.dir/clean
 CMakeFiles/cache_2q.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_2q.dir/build.make CMakeFiles/cache_2q.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_2q.dir/build.make CMakeFiles/cache_2q.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles --progress-num=1,2,3 "Built target cache_2q"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles --progress-num=1,2 "Built target cache_2q"
 .PHONY : CMakeFiles/cache_2q.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/cache_2q.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/cache_2q.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles 0
 .PHONY : CMakeFiles/cache_2q.dir/rule
@@ -102,13 +105,45 @@ cache_2q: CMakeFiles/cache_2q.dir/rule
 # codegen rule for target.
 CMakeFiles/cache_2q.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_2q.dir/build.make CMakeFiles/cache_2q.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles --progress-num=1,2,3 "Finished codegen for target cache_2q"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles --progress-num=1,2 "Finished codegen for target cache_2q"
 .PHONY : CMakeFiles/cache_2q.dir/codegen
 
 # clean rule for target.
 CMakeFiles/cache_2q.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_2q.dir/build.make CMakeFiles/cache_2q.dir/clean
 .PHONY : CMakeFiles/cache_2q.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/cache_ideal.dir
+
+# All Build rule for target.
+CMakeFiles/cache_ideal.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_ideal.dir/build.make CMakeFiles/cache_ideal.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_ideal.dir/build.make CMakeFiles/cache_ideal.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles --progress-num=3,4 "Built target cache_ideal"
+.PHONY : CMakeFiles/cache_ideal.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/cache_ideal.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/cache_ideal.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles 0
+.PHONY : CMakeFiles/cache_ideal.dir/rule
+
+# Convenience name for target.
+cache_ideal: CMakeFiles/cache_ideal.dir/rule
+.PHONY : cache_ideal
+
+# codegen rule for target.
+CMakeFiles/cache_ideal.dir/codegen:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_ideal.dir/build.make CMakeFiles/cache_ideal.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles --progress-num=3,4 "Finished codegen for target cache_ideal"
+.PHONY : CMakeFiles/cache_ideal.dir/codegen
+
+# clean rule for target.
+CMakeFiles/cache_ideal.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cache_ideal.dir/build.make CMakeFiles/cache_ideal.dir/clean
+.PHONY : CMakeFiles/cache_ideal.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.
