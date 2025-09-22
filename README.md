@@ -16,15 +16,23 @@ The 2Q algorithm is an enhanced alternative to LRU that separates items into "on
 - Hit count tracking (`hits`) for efficiency evaluation.
 - Built-in testing system.
 
----
+## 🛠️ Build and Run
+ 1. Создайте папку для сборки
+mkdir build
+cd build
 
-## 📦 Project Structure
+ 2. Сгенерируйте файлы сборки
+cmake ..
 
-- `cache_2q.hpp` — Main cache structure and method declarations.
-- `cache_2q.cpp` — Method implementations (`get`, `putNew`, `putOld`).
-- `main.cpp` — Entry point, data input, and cache execution.
+ 3. Соберите проект
+make
 
----
+4. Запустите
+./cache_2q
+
+## Comparison with ideal cache
+
+-
 
 ## 💡 Personal Notes
 
