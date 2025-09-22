@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <unordered_map>
 
-#include "ideal_cache.hpp"
+#include "cache_ideal.hpp"
 
 // Comment for tests
 #define RUN_USER_INPUT
