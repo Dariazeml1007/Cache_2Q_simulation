@@ -1,4 +1,0 @@
-/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles/cache_2q.dir
-/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles/cache_ideal.dir
-/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/Дарья/Desktop/Владос/Cache_2Q_simulation/build/CMakeFiles/rebuild_cache.dir
