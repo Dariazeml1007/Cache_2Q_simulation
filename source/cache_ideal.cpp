@@ -3,6 +3,8 @@
 #include "cache_ideal.hpp"
 
 using namespace std;
+// Comment for tests
+// #define RUN_USER_INPUT_IDEAL
 
 void get_cache_arguments(size_t* cache_size, vector<int>* elements)
 {
@@ -16,21 +18,41 @@ void get_cache_arguments(size_t* cache_size, vector<int>* elements)
     }
 }
 
-void run_ideal_cache_tests()
+void run_test_ideal(int test_num, size_t cache_size, const std::vector<int>& sequence, size_t expected_hits)
 {
-    cout << "=== IDEAL CACHE TESTS ===" << endl;
+    IdealCache cache(cache_size, sequence );
 
-    // Test case
-    vector<int> requests = {1, 2, 3, 1, 4, 2, 5, 1, 3};
-    IdealCache<int> ideal_cache(3, requests);
+    if (cache.run() == expected_hits)
+    {
+        std::cout << "Test " << test_num << " passed: got " << cache.hits() << " hits\n";
+    }
+    else
+    {
+        std::cerr << "Test " << test_num << " FAILED: expected " << expected_hits
+                  << ", but got " << cache.hits() << "\n";
+    }
+}
 
-    size_t hits = ideal_cache.run();
-    cout << "Ideal cache hits: " << hits << endl;
+void run_all_ideal_tests()
+{
+    std::cout << "=== Running Ideal Cache Tests ===\n\n";
+
+    run_test_ideal(1, 4, {1,2,3,1,4,2,5}, 2);
+
+    run_test_ideal(2, 6, {1,2,3,1,2,3,4,5,6}, 3);
+
+    run_test_ideal(3, 4, {1,2,1,2,1,2,1,2}, 6);
+
+    run_test_ideal(4, 6, {1,2,3,4,4,5,2,3,3,7,8,9,1,2,3}, 7);
+
+    run_test_ideal(5, 8, {1,2,3,4,5,6,3,5,8,9,6,10,5,3,4,2}, 7);
+
+    std::cout << "=== Tests completed ===\n";
 }
 
 int main()
 {
-#ifdef RUN_USER_INPUT
+#ifdef RUN_USER_INPUT_IDEAL
     // Mode: user input
     size_t cache_size;
     vector<int> requests;
@@ -40,14 +62,11 @@ int main()
     IdealCache<int> cache(cache_size, requests);
     size_t hits = cache.run();
 
-    cout << "\n=== IDEAL CACHE RESULTS ===" << endl;
-    cout << "Total requests: " << requests.size() << endl;
     cout << "Cache hits: " << hits << endl;
-    cout << "Hit rate: " << (static_cast<double>(hits) / requests.size() * 100) << "%" << endl;
 
 #else
     // Mode: tests
-    run_ideal_cache_tests();
+    run_all_ideal_tests();
 #endif
 
     return 0;

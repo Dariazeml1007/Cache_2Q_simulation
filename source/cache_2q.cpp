@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <unordered_map>
 
-#include "cache_ideal.hpp"
+#include "cache_2q.hpp"
 
 // Comment for tests
 #define RUN_USER_INPUT
@@ -23,10 +23,13 @@ int main()
     get_cache_arguments(&cache_size, &elements);
 
     // Create ideal cache with the sequence
-    IdealCache<int> cache(cache_size, elements);
-    size_t hits = cache.run();
+    CacheBase<int> cache(cache_size);
+    for (int key : elements)
+    {
+        cache.get(key);
+    }
 
-    std::cout << hits << "\n";
+    std::cout <<"Hits: " << cache.hits() << "\n";
 #else
     // Mode: tests
     run_all_tests();
@@ -50,23 +53,27 @@ void get_cache_arguments(size_t* cache_size, std::vector<int>* elements)
 
 void run_test(int test_num, size_t cache_size, const std::vector<int>& sequence, size_t expected_hits)
 {
-    IdealCache<int> cache(cache_size, sequence);
-    size_t hits = cache.run();
+    CacheBase<int> cache(cache_size);
 
-    if (hits == expected_hits)
+    for (int key : sequence)
     {
-        std::cout << "Test " << test_num << " passed: got " << hits << " hits\n";
+        cache.get(key);
+    }
+
+    if (cache.hits() == expected_hits)
+    {
+        std::cout << "Test " << test_num << " passed: got " << cache.hits() << " hits\n";
     }
     else
     {
         std::cerr << "Test " << test_num << " FAILED: expected " << expected_hits
-                  << ", but got " << hits << "\n";
+                  << ", but got " << cache.hits() << "\n";
     }
 }
 
 void run_all_tests()
 {
-    std::cout << "=== Running Ideal Cache Tests ===\n\n";
+    std::cout << "=== Running 2 Cache Tests ===\n\n";
 
     run_test(1, 4, {1,2,3,1,4,2,5}, 2);
 

@@ -30,7 +30,6 @@ private:
     size_t find_next_use(const KeyType& key, size_t start_index);
     typename std::list<CacheEntry>::iterator find_victim();
     void process_request(const KeyType& key);
-    void add_to_cache(const KeyType& key);
 
 public:
     // Constructor and main interface
@@ -51,7 +50,6 @@ public:
     size_t size()     const { return cache_.size(); }
     size_t capacity() const { return capacity_; }
 };
-
 
 template<typename KeyType>
 size_t IdealCache<KeyType>::run()
@@ -114,34 +112,24 @@ void IdealCache<KeyType>::process_request(const KeyType& key)
     else
     {
         // Miss - element not in cache
-        add_to_cache(key);
-    }
-}
+        size_t next_use = find_next_use(key, current_index_);
 
-template<typename KeyType>
-void IdealCache<KeyType>::add_to_cache(const KeyType& key)
-{
-    size_t next_use = find_next_use(key, current_index_);
-
-    if (cache_.size() < capacity_)
-    {
-        // Free space available - simply add
-        cache_.emplace_front(key, next_use);
-        cache_map_[key] = cache_.begin();
-    }
-    else
-    {
-        // Cache full - need to evict someone
-        auto victim = find_victim();
-
-        // Evict only if new element will be used sooner than current victim
-        if (next_use < victim->next_occurrence)
+        if (cache_.size() < capacity_)
         {
+            // Free space available - simply add
+            cache_.emplace_front(key, next_use);
+            cache_map_[key] = cache_.begin();
+        }
+        else
+        {
+            // Cache full - need to evict someone
+            auto victim = find_victim();
+
             // Remove victim
             cache_map_.erase(victim->key);
             cache_.erase(victim);
 
-            // Add new element
+            // Add new element (ALWAYS add on miss in OPT algorithm)
             cache_.emplace_front(key, next_use);
             cache_map_[key] = cache_.begin();
         }
