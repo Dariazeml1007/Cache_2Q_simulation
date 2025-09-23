@@ -24,12 +24,13 @@ int main()
 
     // Create ideal cache with the sequence
     CacheBase<int> cache(cache_size);
+    size_t hits = 0;
     for (int key : elements)
     {
-        cache.get(key);
+        hits += cache.get(key);
     }
 
-    std::cout <<"Hits: " << cache.hits() << "\n";
+    std::cout <<"Hits: " << hits << "\n";
 #else
     // Mode: tests
     run_all_tests();
@@ -55,19 +56,20 @@ void run_test(int test_num, size_t cache_size, const std::vector<int>& sequence,
 {
     CacheBase<int> cache(cache_size);
 
+    size_t hits = 0;
     for (int key : sequence)
     {
-        cache.get(key);
+        hits += cache.get(key);
     }
 
-    if (cache.hits() == expected_hits)
+    if (hits == expected_hits)
     {
-        std::cout << "Test " << test_num << " passed: got " << cache.hits() << " hits\n";
+        std::cout << "Test " << test_num << " passed: got " << hits<< " hits\n";
     }
     else
     {
         std::cerr << "Test " << test_num << " FAILED: expected " << expected_hits
-                  << ", but got " << cache.hits() << "\n";
+                  << ", but got " << hits << "\n";
     }
 }
 

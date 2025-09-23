@@ -5,8 +5,9 @@
 #include <list>          // for std::list
 #include <unordered_map> // for std::unordered_map
 #include <stdexcept>     // for std::invalid_argument
+#include <iterator>      // std::prev
 
-template<typename KeyType = int>
+template<typename KeyType>
 
 class CacheBase
 {
@@ -16,11 +17,11 @@ private:
         KeyType key;
     };
 
-    enum QueueType
+    enum QueueType //safety and more modern (deepseek said)
     {
-        NOT_CACHED = -1,
-        IN_QUEUE   = 0,  // A1in
-        HOT_QUEUE  = 1   // Am
+        NotCached = -1,
+        InQueue   = 0,
+        HotQueue  = 1
     };
 
     struct EntryInfo
@@ -37,22 +38,16 @@ private:
     // Cache configuration
     size_t size_a1in_;
     size_t size_am_;
-    size_t hits_;
 
-      // Main cache interface
-
-    void putNew(const KeyType& key);
-    void putOld(const KeyType& key);
-
+    void put(std::list<CacheEntry>& queue, QueueType type, size_t max_size, const KeyType& key);
 
 public:
     // Constructor
     CacheBase(size_t total_cache_size)
         : size_a1in_(total_cache_size / 2),
-          size_am_(total_cache_size - size_a1in_),
-          hits_(0)
+          size_am_(total_cache_size - size_a1in_)
     {
-        if (total_cache_size == 0)
+        if (total_cache_size < 2)
         {
             throw std::invalid_argument("Cache size must be positive"); //exception throwing operator !!!
         }
@@ -60,7 +55,6 @@ public:
 
     bool get(const KeyType& key);
     // Getters for statistics and for safety too !!!
-    size_t hits() const { return hits_; }
     size_t size() const { return cache_map_.size(); }
     size_t max_size() const { return size_a1in_ + size_am_; }
 };
@@ -74,20 +68,19 @@ bool CacheBase<KeyType>::get(const KeyType& key)
     if (it == cache_map_.end())
     {
         // Key not found - insert as new
-        CacheBase<KeyType>::putNew(key);
+        put(a1in_queue_,InQueue, size_a1in_, key );
         return false;
     }
     else
     {
-        hits_++;
         // Get metadata about the element's location
         EntryInfo& info = it->second;  // Reference avoids copying
 
-        if (info.queue_type == IN_QUEUE)
+        if (info.queue_type == InQueue)
         {
             // Move from A1in to Am (promotion to hot queue)
             a1in_queue_.erase(info.iter);
-            CacheBase<KeyType>::putOld(key);
+            put(am_queue_, HotQueue, size_am_, key);
         }
         else
         {
@@ -100,44 +93,21 @@ bool CacheBase<KeyType>::get(const KeyType& key)
 }
 
 template<typename KeyType>
-void CacheBase<KeyType>::putOld(const KeyType& key)
+void CacheBase<KeyType>::put(std::list<CacheEntry>& queue, QueueType type, size_t max_size, const KeyType& key)
 {
-    // Add to the end of Am (LRU queue)
-    am_queue_.push_back({key});
+    // Create and add entry to the end of куеуе
+    queue.push_back({key});  // aggregate initialization
 
-    // Get iterator to newly added element
-    auto new_it = std::prev(am_queue_.end());
-    cache_map_[key] = {new_it, HOT_QUEUE};
-
-    // Check if Am queue overflow - evict from front (LRU)
-    if (am_queue_.size() > size_am_)
-    {
-        KeyType front_key = am_queue_.front().key;
-        am_queue_.pop_front();
-        cache_map_.erase(front_key);
-    }
-}
-
-template<typename KeyType>
-void CacheBase<KeyType>::putNew(const KeyType& key)
-{
-    // Create and add entry to the end of A1in (FIFO queue)
-    a1in_queue_.push_back({key});
-
-    // Get iterator to newly added element
-    auto it = std::prev(a1in_queue_.end());
-
-    // Create entry info and add to hash map
-    EntryInfo info{it, IN_QUEUE};
-    cache_map_[key] = info;  // Automatically creates or updates entry
+    cache_map_[key] = {std::prev(queue.end()), type};;  // Automatically creates or updates entry
 
     // Check if A1in queue overflow - evict from front (FIFO)
-    if (a1in_queue_.size() > size_a1in_)
+    if (queue.size() > max_size)
     {
-        KeyType front_key = a1in_queue_.front().key;
-        a1in_queue_.pop_front();
-        cache_map_.erase(front_key);
+        cache_map_.erase(queue.front().key); //first deleted entry
+        queue.pop_front(); //second deleted front elem
     }
+
 }
+
 
 #endif // CACHE_BASE_HPP

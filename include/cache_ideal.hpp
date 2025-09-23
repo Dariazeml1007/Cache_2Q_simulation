@@ -7,7 +7,7 @@
 #include <list>
 #include <stdexcept>
 
-template<typename KeyType = int>
+template<typename KeyType>
 class IdealCache
 {
 private:
