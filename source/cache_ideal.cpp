@@ -4,7 +4,7 @@
 
 using namespace std;
 // Comment for tests
-// #define RUN_USER_INPUT_IDEAL
+ #define RUN_USER_INPUT_IDEAL
 
 void get_cache_arguments(size_t* cache_size, vector<int>* elements)
 {
