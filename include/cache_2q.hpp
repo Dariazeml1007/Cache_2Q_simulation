@@ -58,7 +58,7 @@ public:
     CacheBase(size_t total_cache_size, PageLoader loader)
         : size_a1in_(total_cache_size / 2)
         , size_am_(total_cache_size / 2)
-        , size_a_out_(total_cache_size)
+        , size_a_out_(total_cache_size) // it is only keys so we don't need to share memory
         , slow_get_page_(std::move(loader))
     {
         if (total_cache_size < 2)
@@ -126,7 +126,7 @@ template<typename KeyType, typename ValueType>
 void CacheBase<KeyType, ValueType>::put(std::list<CacheEntry>& queue, QueueType type, size_t max_size, const KeyType& key, const ValueType& val)
 {
     // Create and add entry to the end of куеуе
-    queue.push_back({key, val});  // aggregate initialization
+    queue.push_back({key, val});
 
     cache_map_[key] = {std::prev(queue.end()), type};;  // Automatically creates or updates entry
 
@@ -146,7 +146,7 @@ void CacheBase<KeyType, ValueType>::put(std::list<CacheEntry>& queue, QueueType 
 template<typename KeyType, typename ValueType>
 void CacheBase<KeyType, ValueType>::insert_into_Aout(const KeyType& key)
 {
-    a_out_queue_.push_back(key);
+    a_out_queue_.push_back(key); //only key cuz a_out
     a_out_map_[key] = std::prev(a_out_queue_.end());
 
     if (a_out_queue_.size() > size_a_out_)

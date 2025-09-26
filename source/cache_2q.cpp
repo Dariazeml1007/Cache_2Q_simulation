@@ -17,6 +17,7 @@ auto slow_get_page = [](int key) -> std::string
 {
     return "data_for_key_" + std::to_string(key);
 };
+
 int main()
 {
 #ifdef RUN_USER_INPUT
