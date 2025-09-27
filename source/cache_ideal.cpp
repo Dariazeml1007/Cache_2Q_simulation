@@ -4,7 +4,7 @@
 
 using namespace std;
 // Comment for tests
- #define RUN_USER_INPUT_IDEAL
+
 
 void get_cache_arguments(size_t* cache_size, vector<int>* elements)
 {
@@ -52,7 +52,12 @@ void run_all_ideal_tests()
 
 int main()
 {
-#ifdef RUN_USER_INPUT_IDEAL
+#ifdef RUN_TESTS
+     // Mode: tests
+    run_all_ideal_tests();
+
+#else
+
     // Mode: user input
     size_t cache_size;
     vector<int> requests;
@@ -63,10 +68,6 @@ int main()
     size_t hits = cache.run();
 
     cout << "Cache hits: " << hits << endl;
-
-#else
-    // Mode: tests
-    run_all_ideal_tests();
 #endif
 
     return 0;

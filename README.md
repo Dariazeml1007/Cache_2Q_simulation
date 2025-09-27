@@ -27,31 +27,25 @@ Input: 2 6 1 2 1 2 1 2
 Output: 4
 
 ## 🛠️ Build and Run
- 1. Создайте папку для сборки
+ 1. Create a build directory and generate build files:
   ```c
-mkdir build
-cd build
+cmake -B build
   ```
- 2. Сгенерируйте файлы сборки
+ 2. Build the project:
   ```c
-cmake ..
+cmake --build build
   ```
- 3. Соберите проект
-  ```c
-make
-  ```
-4. Запустите 2Q или Ideal
+3. Run the executables:
   ```c
 ./cache_2q
 
 ./cache_ideal
   ```
 ##  Run Built-in Tests
-To run automated tests instead:
-1. Open `cache_2q.cpp`.
-2. Comment the line: `#define RUN_USER_INPUT_2Q`
-3. Recompile and run.
-
+To run automated tests instead  - rebuild the project with RUN_TESTS=ON
+  ```c
+cmake -B build -D RUN_TESTS=ON
+  ```
 ## Comparison with ideal cache
 
 

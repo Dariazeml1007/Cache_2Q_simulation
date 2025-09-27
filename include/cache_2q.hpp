@@ -63,7 +63,7 @@ public:
     {
         if (total_cache_size < 2)
         {
-            throw std::invalid_argument("Cache size must be at least 3");
+            throw std::invalid_argument("Cache size must be at least 2");
         }
     }
 

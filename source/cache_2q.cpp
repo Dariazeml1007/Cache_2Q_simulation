@@ -6,8 +6,6 @@
 
 #include "cache_2q.hpp"
 
-// Comment for tests
-#define RUN_USER_INPUT
 
 void get_cache_arguments(size_t* cache_size, std::vector<int>* elements);
 void run_test(int test_num, size_t cache_size, const std::vector<int>& sequence, size_t expected_hits);
@@ -20,7 +18,11 @@ auto slow_get_page = [](int key) -> std::string
 
 int main()
 {
-#ifdef RUN_USER_INPUT
+#ifdef RUN_TESTS
+    // Mode: tests
+    run_all_tests();
+#else
+
     // Mode: keyboard input
     size_t cache_size;
     std::vector<int> elements;
@@ -36,9 +38,6 @@ int main()
     }
 
     std::cout << hits << "\n";
-#else
-    // Mode: tests
-    run_all_tests();
 #endif
 
     return 0;
