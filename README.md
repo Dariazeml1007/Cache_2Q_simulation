@@ -29,7 +29,7 @@ Output: 4
 ## 🛠️ Build and Run
  1. Create a build directory and generate build files:
   ```c
-cmake -B build
+cmake -B build -D RUN_TESTS=OFF
   ```
  2. Build the project:
   ```c
