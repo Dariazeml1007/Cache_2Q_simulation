@@ -7,19 +7,18 @@
 #include <stdexcept>     // for std::invalid_argument
 #include <iterator>      // std::prev
 #include <functional>    //
+#include <utility>     // std::pair
+#include <cassert>
 
+namespace caches
+{
 template<typename KeyType, typename ValueType>
 
 class CacheBase
 {
 private:
-    struct CacheEntry
-    {
-        KeyType key;
-        ValueType value;
-    };
 
-    enum QueueType
+    enum class QueueType
     {
         NotCached = -1,
         InQueue   = 0,
@@ -27,19 +26,15 @@ private:
         OutQueue  = 2
     };
 
-    struct EntryInfo
-    {
-        typename std::list<CacheEntry>::iterator iter;
-        QueueType queue_type;
-    };
+    using EntryInfo = std::pair<typename std::list<std::pair<KeyType, ValueType>>::iterator,QueueType>;
 
     // Internal data structures
-    std::list<CacheEntry> a1in_queue_;  // FIFO queue
-    std::list<CacheEntry> am_queue_   ; // LRU queue
+   std::list<std::pair<KeyType, ValueType>> a1in_queue_;  // FIFO queue
+    std::list<std::pair<KeyType, ValueType>> am_queue_;    // LRU queue
     std::list<KeyType> a_out_queue_;
 
     std::unordered_map<KeyType, EntryInfo> cache_map_;
-    std::unordered_map<KeyType, typename std::list<KeyType>::iterator> a_out_map_; // для метаданных
+    std::unordered_map<KeyType, typename std::list<KeyType>::iterator> a_out_map_; // for meta data
 
     // Cache configuration
     size_t size_a1in_;
@@ -49,8 +44,11 @@ private:
     using PageLoader = std::function<ValueType(const KeyType&)>;
     PageLoader slow_get_page_;
 
-    void put(std::list<CacheEntry>& queue, QueueType type, size_t max_size, const KeyType& key, const ValueType& val);
+    void put(std::list<std::pair<KeyType, ValueType>>& queue, QueueType type, size_t max_size, const KeyType& key, const ValueType& val);
     void insert_into_Aout(const KeyType& key);
+    bool handle_hit(const KeyType& key, EntryInfo& info);
+    bool handle_miss_in_aout(const KeyType& key);
+    bool handle_cache_miss(const KeyType& key);
 
 
 public:
@@ -67,92 +65,141 @@ public:
         }
     }
 
+     //Rule of 5
+     // 1.
+    ~CacheBase() = default;
+
+    // 2.
+    CacheBase(const CacheBase&) = delete;
+
+    // 3.
+    CacheBase& operator=(const CacheBase&) = delete;
+
+    // 4.
+    CacheBase(CacheBase&&) = default;
+
+    // 5.
+    CacheBase& operator=(CacheBase&&) = default;
+
+
     bool get(const KeyType& key);
     // Getters for statistics and for safety too !!!
     size_t size() const { return cache_map_.size(); }
     size_t max_size() const { return size_a1in_ + size_am_ + size_a_out_; }
 };
 
-// Implementation of template methods must be in the header file
 template<typename KeyType, typename ValueType>
 bool CacheBase<KeyType, ValueType>::get(const KeyType& key)
 {
     auto it = cache_map_.find(key);
     if (it != cache_map_.end())
     {
-        // Get metadata about the element's location
-        EntryInfo& info = it->second;  // Reference avoids copying
-
-        if (info.queue_type == InQueue)
-        {
-            // Move from A1in to Am (promotion to hot queue)
-            ValueType val = info.iter->value;
-            a1in_queue_.erase(info.iter);
-            put(am_queue_, HotQueue, size_am_, key, val);
-        }
-        else
-        {
-            // Element is already in Am -> update LRU: move to end
-            am_queue_.splice(am_queue_.end(), am_queue_, info.iter);
-            // splice moves without copying or memory allocation
-        }
-        return true;
+        return handle_hit(key, it->second);
     }
 
-    auto it_out = a_out_map_.find(key);
-
-    if (it_out != a_out_map_.end())
+    if (a_out_map_.find(key) != a_out_map_.end())
     {
-        ValueType value = slow_get_page_(key);
-        put(am_queue_, HotQueue, size_am_, key, value);
-
-        // Удаляем из A_out
-        a_out_queue_.erase(it_out->second);
-        a_out_map_.erase(it_out);
-
-
-        return false;
+        return handle_miss_in_aout(key);
     }
 
-
-    // Key not found - insert as new
-    ValueType val = slow_get_page_(key);
-    put(a1in_queue_, InQueue, size_a1in_, key, val);
-    return false;
-
+    return handle_cache_miss(key);
 }
 
 template<typename KeyType, typename ValueType>
-void CacheBase<KeyType, ValueType>::put(std::list<CacheEntry>& queue, QueueType type, size_t max_size, const KeyType& key, const ValueType& val)
+bool CacheBase<KeyType, ValueType>::handle_hit(const KeyType& key, EntryInfo& info)
 {
-    // Create and add entry to the end of куеуе
-    queue.push_back({key, val});
+    assert(cache_map_.find(key) != cache_map_.end());
 
-    cache_map_[key] = {std::prev(queue.end()), type};;  // Automatically creates or updates entry
+    assert(info.second == QueueType::InQueue || info.second == QueueType::HotQueue);
 
-    // Check if A1in queue overflow - evict from front (FIFO)
+    if (info.second == QueueType::InQueue)
+    {
+        // Move from A1in to Am
+        ValueType val = info.first->second;
+        a1in_queue_.erase(info.first);
+        put(am_queue_, QueueType::HotQueue, size_am_, key, val);
+    }
+    else
+    {
+        // Update LRU
+        am_queue_.splice(am_queue_.end(), am_queue_, info.first);
+    }
+    return true;
+}
+
+template<typename KeyType, typename ValueType>
+bool CacheBase<KeyType, ValueType>::handle_miss_in_aout(const KeyType& key)
+{
+    ValueType value = slow_get_page_(key);
+    put(am_queue_, QueueType::HotQueue, size_am_, key, value);
+
+    auto it_out = a_out_map_.find(key);
+    a_out_queue_.erase(it_out->second);
+    a_out_map_.erase(it_out);
+
+    return false;
+}
+
+template<typename KeyType, typename ValueType>
+bool CacheBase<KeyType, ValueType>::handle_cache_miss(const KeyType& key)
+{
+    ValueType val = slow_get_page_(key);
+    put(a1in_queue_, QueueType::InQueue, size_a1in_, key, val);
+    return false;
+}
+
+
+template<typename KeyType, typename ValueType>
+void CacheBase<KeyType, ValueType>::put(
+    std::list<std::pair<KeyType, ValueType>>& queue,
+    QueueType type,
+    size_t max_size,
+    const KeyType& key,
+    const ValueType& val
+)
+{
+    queue.emplace_back(key, val);
+
+    cache_map_[key] = { std::prev(queue.end()), type };
+
+    assert(cache_map_.find(key) != cache_map_.end());
+    assert(cache_map_[key].first != queue.end());
+
     if (queue.size() > max_size)
     {
-        if (type == InQueue)
-        {
-            insert_into_Aout(queue.front().key);
-        }
-        cache_map_.erase(queue.front().key); //first deleted entry
-        queue.pop_front(); //second deleted front elem
-    }
 
+        KeyType victim_key = queue.front().first;
+
+        // KEY should be in
+        assert(cache_map_.find(victim_key) != cache_map_.end());
+
+        if (type == QueueType::InQueue)
+        {
+            insert_into_Aout(queue.front().first);
+        }
+        cache_map_.erase(queue.front().first);
+        queue.pop_front();
+    }
 }
 
 template<typename KeyType, typename ValueType>
 void CacheBase<KeyType, ValueType>::insert_into_Aout(const KeyType& key)
 {
-    a_out_queue_.push_back(key); //only key cuz a_out
+    assert(a_out_map_.find(key) == a_out_map_.end());
+
+    a_out_queue_.emplace_back(key);
     a_out_map_[key] = std::prev(a_out_queue_.end());
 
     if (a_out_queue_.size() > size_a_out_)
     {
+        KeyType victim_key = a_out_queue_.front();
+
+        assert(a_out_map_.find(victim_key) != a_out_map_.end());
+
         a_out_map_.erase(a_out_queue_.front());
         a_out_queue_.pop_front();
     }
 }
+} // namespace caches
+
 #endif // CACHE_BASE_HPP

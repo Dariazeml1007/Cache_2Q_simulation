@@ -44,7 +44,8 @@ cmake --build build
 ##  Run Built-in Tests
 To run automated tests instead  - rebuild the project with RUN_TESTS=ON
   ```c
-cmake -B build -D RUN_TESTS=ON
+cd build
+ctest -V
   ```
 ## Comparison with ideal cache
 

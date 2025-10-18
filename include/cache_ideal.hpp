@@ -7,30 +7,29 @@
 #include <stdexcept>
 #include <limits>
 #include <algorithm>
+#include <utility> // for std::pair
+#include <cassert>  // for asserts
+
+namespace caches
+{
 
 template<typename KeyType>
 class IdealCache
 {
 private:
-    struct CacheEntry
-    {
-        KeyType key;
-        size_t next_occurrence;
-
-        CacheEntry(KeyType k, size_t next) : key(k), next_occurrence(next) {}
-    };
-
     size_t capacity_;
     std::vector<KeyType> requests_;
-    std::list<CacheEntry> cache_;
-    std::unordered_map<KeyType, typename std::list<CacheEntry>::iterator> cache_map_;
+    std::list<std::pair<KeyType, size_t>> cache_; // CacheEntry -> pair<Key, next_use>
+    std::unordered_map<KeyType, typename std::list<std::pair<KeyType, size_t>>::iterator> cache_map_;
     std::vector<size_t> next_uses_; // precomputed next uses
     size_t current_index_;
     size_t hits_;
 
     // Precompute all next uses
     void precompute_next_uses();
-    //typename std::list<CacheEntry>::iterator find_victim();
+    void handle_access(const KeyType& key);
+    typename std::list<std::pair<KeyType, size_t>>::iterator find_victim();
+    void insert(const KeyType& key, size_t next_use);
 
 public:
     IdealCache(size_t capacity, const std::vector<KeyType>& requests)
@@ -42,6 +41,22 @@ public:
         }
         precompute_next_uses();
     }
+
+    // Rule of 5
+    // 1. Destructor
+    ~IdealCache() = default;
+
+    // 2. Copy constructor
+    IdealCache(const IdealCache&) = delete;
+
+    // 3. Copy assignment
+    IdealCache& operator=(const IdealCache&) = delete;
+
+    // 4. Move constructor
+    IdealCache(IdealCache&&) = default;
+
+    // 5. Move assignment
+    IdealCache& operator=(IdealCache&&) = default;
 
     size_t run();
     size_t hits() const { return hits_; }
@@ -58,7 +73,7 @@ void IdealCache<KeyType>::precompute_next_uses()
     // Initialize with "never used again"
     for (size_t i = 0; i < requests_.size(); ++i)
     {
-        next_uses_[i] = std::numeric_limits<size_t>::max(); //max_size
+        next_uses_[i] = std::numeric_limits<size_t>::max();
     }
 
     // Fill next uses in reverse to be efficient
@@ -82,61 +97,77 @@ size_t IdealCache<KeyType>::run()
 
     for (current_index_ = 0; current_index_ < requests_.size(); ++current_index_)
     {
-        KeyType key = requests_[current_index_];
-        auto it = cache_map_.find(key);
-
-        if (it != cache_map_.end())
-        {
-            hits_++;
-            // Update next usage
-            it->second->next_occurrence = next_uses_[current_index_];
-        }
-        else
-        {
-            // Miss
-            size_t next_use = next_uses_[current_index_];
-
-            // Only add if will be used again
-            if (next_use != std::numeric_limits<size_t>::max())
-            {
-                if (cache_.size() < capacity_)
-                {
-                    // Free space - add
-                    cache_.emplace_front(key, next_use);
-                    cache_map_[key] = cache_.begin();
-                }
-                else
-                {
-                    // Find victim - element with largest next_use
-                    auto victim = cache_.begin();
-                    for (auto it = cache_.begin(); it != cache_.end(); ++it)
-                    {
-                        if (it->next_occurrence == std::numeric_limits<size_t>::max())
-                        {
-                            victim = it;
-                            break;
-                        }
-                        if (it->next_occurrence > victim->next_occurrence)
-                        {
-                            victim = it;
-                        }
-                    }
-
-                    // Replace only if new element is needed sooner
-                    if (next_use < victim->next_occurrence)
-                    {
-                        cache_map_.erase(victim->key);
-                        cache_.erase(victim);
-
-                        cache_.emplace_front(key, next_use);
-                        cache_map_[key] = cache_.begin();
-                    }
-                }
-            }
-        }
+        handle_access(requests_[current_index_]);
     }
 
     return hits_;
 }
 
-#endif // IDEAL_CACHE_HPP
+template<typename KeyType>
+void IdealCache<KeyType>::handle_access(const KeyType& key)
+{
+    auto it = cache_map_.find(key);
+
+    if (it != cache_map_.end())
+    {
+        // Hit: update next occurrence
+        hits_++;
+        assert(it->second != cache_.end()); // iterator must be valid
+        it->second->second = next_uses_[current_index_]; // iterator points to pair, then .second is next_use
+    }
+    else
+    {
+        // Miss
+        size_t next_use = next_uses_[current_index_];
+
+        // Don't cache elements that won't be used again
+        if (next_use == std::numeric_limits<size_t>::max())
+            return;
+
+        if (cache_.size() < capacity_)
+        {
+            insert(key, next_use);
+        }
+        else
+        {
+            auto victim = find_victim();
+            if (next_use < victim->second)
+            {
+                assert(cache_map_.find(victim->first) != cache_map_.end()); // key must be in cache_map_
+                cache_map_.erase(victim->first); // .first is the key
+                cache_.erase(victim);
+                insert(key, next_use);
+            }
+        }
+    }
+}
+
+template<typename KeyType>
+typename std::list<std::pair<KeyType, size_t>>::iterator
+IdealCache<KeyType>::find_victim()
+{
+    auto victim = cache_.begin();
+    for (auto it = cache_.begin(); it != cache_.end(); ++it)
+    {
+        if (it->second == std::numeric_limits<size_t>::max()) // it->second is next_occurrence
+        {
+            return it;
+        }
+        if (it->second > victim->second)
+        {
+            victim = it;
+        }
+    }
+    return victim;
+}
+
+template<typename KeyType>
+void IdealCache<KeyType>::insert(const KeyType& key, size_t next_use)
+{
+    cache_.emplace_front(key, next_use);
+    cache_map_[key] = cache_.begin();
+    assert(cache_map_.find(key) != cache_map_.end()); // verify key was added to cache_map_
+}
+
+}
+#endif
