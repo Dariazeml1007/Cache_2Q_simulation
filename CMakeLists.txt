@@ -8,8 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXECUTABLE_SUFFIX "")
 
 
-add_executable(cache_2q source/cache_2q.cpp source/input_utils.cpp)
-add_executable(cache_ideal source/cache_ideal.cpp source/input_utils.cpp)
+add_executable(cache_2q source/cache_2q.cpp )
+add_executable(cache_ideal source/cache_ideal.cpp )
 
 
 target_include_directories(cache_2q PRIVATE include)

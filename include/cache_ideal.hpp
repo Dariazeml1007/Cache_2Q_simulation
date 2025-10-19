@@ -28,6 +28,9 @@ private:
     // Precompute all next uses
     void precompute_next_uses();
     void handle_access(const KeyType& key);
+    void handle_hit(typename std::unordered_map<KeyType,
+    typename std::list<std::pair<KeyType, size_t>>::iterator>::iterator cache_it);
+    void handle_miss(const KeyType& key);
     typename std::list<std::pair<KeyType, size_t>>::iterator find_victim();
     void insert(const KeyType& key, size_t next_use);
 
@@ -111,36 +114,49 @@ void IdealCache<KeyType>::handle_access(const KeyType& key)
     if (it != cache_map_.end())
     {
         // Hit: update next occurrence
-        hits_++;
-        assert(it->second != cache_.end()); // iterator must be valid
-        it->second->second = next_uses_[current_index_]; // iterator points to pair, then .second is next_use
+        handle_hit(it);
     }
     else
     {
-        // Miss
-        size_t next_use = next_uses_[current_index_];
+        handle_miss(key);
+    }
+}
 
-        // Don't cache elements that won't be used again
-        if (next_use == std::numeric_limits<size_t>::max())
-            return;
+template<typename KeyType>
+void IdealCache<KeyType>::handle_hit(typename std::unordered_map<KeyType,
+    typename std::list<std::pair<KeyType, size_t>>::iterator>::iterator cache_it)
+{
+    hits_++;
+    assert(cache_it->second != cache_.end()); // iterator must be valid
+    cache_it->second->second = next_uses_[current_index_]; // iterator points to pair, then .second is next_use
 
-        if (cache_.size() < capacity_)
+}
+
+template<typename KeyType>
+void IdealCache<KeyType>::handle_miss(const KeyType& key)
+{
+    // Miss
+    size_t next_use = next_uses_[current_index_];
+    // Don't cache elements that won't be used again
+    if (next_use == std::numeric_limits<size_t>::max())
+        return;
+    if (cache_.size() < capacity_)
+    {
+        insert(key, next_use);
+    }
+    else
+    {
+        auto victim = find_victim();
+        if (next_use < victim->second)
         {
+            assert(cache_map_.find(victim->first) != cache_map_.end()); // key must be in cache_map_
+            cache_map_.erase(victim->first); // .first is the key
+            cache_.erase(victim);
             insert(key, next_use);
-        }
-        else
-        {
-            auto victim = find_victim();
-            if (next_use < victim->second)
-            {
-                assert(cache_map_.find(victim->first) != cache_map_.end()); // key must be in cache_map_
-                cache_map_.erase(victim->first); // .first is the key
-                cache_.erase(victim);
-                insert(key, next_use);
-            }
         }
     }
 }
+
 
 template<typename KeyType>
 typename std::list<std::pair<KeyType, size_t>>::iterator

@@ -17,11 +17,13 @@ int main()
 
         util::get_cache_arguments(cache_size, elements);
 
-        caches::CacheBase<int, std::string> cache(cache_size, slow_get_page);
+        caches::Cache_2Q<int, std::string> cache(cache_size, slow_get_page);
 
         size_t hits = 0;
-        for (int key : elements) {
-            hits += cache.get(key);
+        for (int key : elements)
+        {
+
+            hits += cache.get(key).first;
         }
 
         std::cout << hits << "\n";

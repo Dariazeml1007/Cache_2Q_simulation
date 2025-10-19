@@ -14,7 +14,7 @@ namespace caches
 {
 template<typename KeyType, typename ValueType>
 
-class CacheBase
+class Cache_2Q
 {
 private:
 
@@ -29,7 +29,7 @@ private:
     using EntryInfo = std::pair<typename std::list<std::pair<KeyType, ValueType>>::iterator,QueueType>;
 
     // Internal data structures
-   std::list<std::pair<KeyType, ValueType>> a1in_queue_;  // FIFO queue
+    std::list<std::pair<KeyType, ValueType>> a1in_queue_;  // FIFO queue
     std::list<std::pair<KeyType, ValueType>> am_queue_;    // LRU queue
     std::list<KeyType> a_out_queue_;
 
@@ -46,14 +46,15 @@ private:
 
     void put(std::list<std::pair<KeyType, ValueType>>& queue, QueueType type, size_t max_size, const KeyType& key, const ValueType& val);
     void insert_into_Aout(const KeyType& key);
-    bool handle_hit(const KeyType& key, EntryInfo& info);
-    bool handle_miss_in_aout(const KeyType& key);
-    bool handle_cache_miss(const KeyType& key);
+
+    void handle_hit(const KeyType& key, EntryInfo& info);
+    void handle_miss_in_aout(const KeyType& key, const ValueType& value);
+    void handle_cache_miss(const KeyType& key, const ValueType& value);
 
 
 public:
     // Constructor
-    CacheBase(size_t total_cache_size, PageLoader loader)
+    Cache_2Q(size_t total_cache_size, PageLoader loader)
         : size_a1in_(total_cache_size / 2)
         , size_am_(total_cache_size / 2)
         , size_a_out_(total_cache_size) // it is only keys so we don't need to share memory
@@ -67,49 +68,55 @@ public:
 
      //Rule of 5
      // 1.
-    ~CacheBase() = default;
+    ~Cache_2Q() = default;
 
     // 2.
-    CacheBase(const CacheBase&) = delete;
+    Cache_2Q(const Cache_2Q&) = delete;
 
     // 3.
-    CacheBase& operator=(const CacheBase&) = delete;
+    Cache_2Q& operator=(const Cache_2Q&) = delete;
 
     // 4.
-    CacheBase(CacheBase&&) = default;
+    Cache_2Q(Cache_2Q&&) = default;
 
     // 5.
-    CacheBase& operator=(CacheBase&&) = default;
+    Cache_2Q& operator=(Cache_2Q&&) = default;
 
 
-    bool get(const KeyType& key);
+    std::pair<bool, ValueType> get(const KeyType& key);
+
     // Getters for statistics and for safety too !!!
     size_t size() const { return cache_map_.size(); }
     size_t max_size() const { return size_a1in_ + size_am_ + size_a_out_; }
 };
 
 template<typename KeyType, typename ValueType>
-bool CacheBase<KeyType, ValueType>::get(const KeyType& key)
+std::pair<bool, ValueType> Cache_2Q<KeyType, ValueType>::get(const KeyType& key)
 {
     auto it = cache_map_.find(key);
     if (it != cache_map_.end())
     {
-        return handle_hit(key, it->second);
+        ValueType value = it->second.first->second;
+        handle_hit(key, it->second);
+        return {true, value};  // Hit (return true and value)
     }
 
     if (a_out_map_.find(key) != a_out_map_.end())
     {
-        return handle_miss_in_aout(key);
+        ValueType value = slow_get_page_(key);
+        handle_miss_in_aout(key, value);
+        return {false, value};  // Miss (was in A_out)
     }
 
-    return handle_cache_miss(key);
+    ValueType value = slow_get_page_(key);
+    handle_cache_miss(key, value);
+    return {false, value};  // miss
 }
 
 template<typename KeyType, typename ValueType>
-bool CacheBase<KeyType, ValueType>::handle_hit(const KeyType& key, EntryInfo& info)
+void Cache_2Q<KeyType, ValueType>::handle_hit(const KeyType& key, EntryInfo& info)
 {
     assert(cache_map_.find(key) != cache_map_.end());
-
     assert(info.second == QueueType::InQueue || info.second == QueueType::HotQueue);
 
     if (info.second == QueueType::InQueue)
@@ -124,33 +131,27 @@ bool CacheBase<KeyType, ValueType>::handle_hit(const KeyType& key, EntryInfo& in
         // Update LRU
         am_queue_.splice(am_queue_.end(), am_queue_, info.first);
     }
-    return true;
 }
 
 template<typename KeyType, typename ValueType>
-bool CacheBase<KeyType, ValueType>::handle_miss_in_aout(const KeyType& key)
+void Cache_2Q<KeyType, ValueType>::handle_miss_in_aout(const KeyType& key, const ValueType& value)
 {
-    ValueType value = slow_get_page_(key);
     put(am_queue_, QueueType::HotQueue, size_am_, key, value);
 
     auto it_out = a_out_map_.find(key);
     a_out_queue_.erase(it_out->second);
     a_out_map_.erase(it_out);
-
-    return false;
 }
 
 template<typename KeyType, typename ValueType>
-bool CacheBase<KeyType, ValueType>::handle_cache_miss(const KeyType& key)
+void Cache_2Q<KeyType, ValueType>::handle_cache_miss(const KeyType& key, const ValueType& value)
 {
-    ValueType val = slow_get_page_(key);
-    put(a1in_queue_, QueueType::InQueue, size_a1in_, key, val);
-    return false;
+    put(a1in_queue_, QueueType::InQueue, size_a1in_, key, value);
 }
 
 
 template<typename KeyType, typename ValueType>
-void CacheBase<KeyType, ValueType>::put(
+void Cache_2Q<KeyType, ValueType>::put(
     std::list<std::pair<KeyType, ValueType>>& queue,
     QueueType type,
     size_t max_size,
@@ -183,7 +184,7 @@ void CacheBase<KeyType, ValueType>::put(
 }
 
 template<typename KeyType, typename ValueType>
-void CacheBase<KeyType, ValueType>::insert_into_Aout(const KeyType& key)
+void Cache_2Q<KeyType, ValueType>::insert_into_Aout(const KeyType& key)
 {
     assert(a_out_map_.find(key) == a_out_map_.end());
 
@@ -202,4 +203,4 @@ void CacheBase<KeyType, ValueType>::insert_into_Aout(const KeyType& key)
 }
 } // namespace caches
 
-#endif // CACHE_BASE_HPP
+#endif // CACHE_2Q_HPP
