@@ -22,8 +22,8 @@ int main()
         size_t hits = 0;
         for (int key : elements)
         {
-
-            hits += cache.get(key).first;
+            auto [it, found] = cache.get(key);
+            hits += found;
         }
 
         std::cout << hits << "\n";

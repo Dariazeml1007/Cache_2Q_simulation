@@ -18,23 +18,27 @@ class Cache_2Q
 {
 private:
 
+    using KeyValuePair = std::pair<KeyType, ValueType>;
+    using KeyValueList = std::list<KeyValuePair>;
+    using KeyValueIterator = typename KeyValueList::iterator;
+
     enum class QueueType
     {
-        NotCached = -1,
-        InQueue   = 0,
-        HotQueue  = 1,
-        OutQueue  = 2
+        NotCached = 0,
+        InQueue   = 1,
+        HotQueue  = 2,
+        OutQueue  = 3
     };
 
-    using EntryInfo = std::pair<typename std::list<std::pair<KeyType, ValueType>>::iterator,QueueType>;
+     using EntryInfo = std::pair<KeyValueIterator, QueueType>;
 
     // Internal data structures
-    std::list<std::pair<KeyType, ValueType>> a1in_queue_;  // FIFO queue
-    std::list<std::pair<KeyType, ValueType>> am_queue_;    // LRU queue
+    KeyValueList a1in_queue_;  // FIFO queue
+    KeyValueList am_queue_;    // LRU queue
     std::list<KeyType> a_out_queue_;
 
     std::unordered_map<KeyType, EntryInfo> cache_map_;
-    std::unordered_map<KeyType, typename std::list<KeyType>::iterator> a_out_map_; // for meta data
+    std::unordered_map<KeyType, typename std::list<KeyType>::iterator> a_out_map_;
 
     // Cache configuration
     size_t size_a1in_;
@@ -66,51 +70,49 @@ public:
         }
     }
 
-     //Rule of 5
-     // 1.
-    ~Cache_2Q() = default;
+    using Iterator = typename std::unordered_map<KeyType, EntryInfo>::iterator;
+    using ConstIterator = typename std::unordered_map<KeyType, EntryInfo>::const_iterator;
 
-    // 2.
-    Cache_2Q(const Cache_2Q&) = delete;
+    std::pair<Iterator, bool> get(const KeyType& key);
 
-    // 3.
-    Cache_2Q& operator=(const Cache_2Q&) = delete;
+    Iterator end() { return cache_map_.end(); }
+    ConstIterator end() const { return cache_map_.end(); }
 
-    // 4.
-    Cache_2Q(Cache_2Q&&) = default;
+    // Хелперы для доступа к данным через итератор
+    ValueType& value(Iterator it) { return it->second.first->second; }
+    const ValueType& value(ConstIterator it) const { return it->second.first->second; }
+    const KeyType& key(Iterator it) const { return it->first; }
 
-    // 5.
-    Cache_2Q& operator=(Cache_2Q&&) = default;
-
-
-    std::pair<bool, ValueType> get(const KeyType& key);
-
+    // Для обратной совместимости можно оставить старый метод
+    std::pair<bool, ValueType> get_old(const KeyType& key) {
+        auto [it, found] = get(key);
+        return {found, value(it)};
+    }
     // Getters for statistics and for safety too !!!
     size_t size() const { return cache_map_.size(); }
     size_t max_size() const { return size_a1in_ + size_am_ + size_a_out_; }
 };
-
 template<typename KeyType, typename ValueType>
-std::pair<bool, ValueType> Cache_2Q<KeyType, ValueType>::get(const KeyType& key)
+std::pair<typename Cache_2Q<KeyType, ValueType>::Iterator, bool>
+Cache_2Q<KeyType, ValueType>::get(const KeyType& key)
 {
     auto it = cache_map_.find(key);
     if (it != cache_map_.end())
     {
-        ValueType value = it->second.first->second;
         handle_hit(key, it->second);
-        return {true, value};  // Hit (return true and value)
+        return {it, true};
     }
 
     if (a_out_map_.find(key) != a_out_map_.end())
     {
         ValueType value = slow_get_page_(key);
         handle_miss_in_aout(key, value);
-        return {false, value};  // Miss (was in A_out)
+        return {cache_map_.find(key), false};
     }
 
     ValueType value = slow_get_page_(key);
     handle_cache_miss(key, value);
-    return {false, value};  // miss
+    return {cache_map_.find(key), false};
 }
 
 template<typename KeyType, typename ValueType>

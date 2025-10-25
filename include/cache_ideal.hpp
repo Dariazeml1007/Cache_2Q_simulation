@@ -45,22 +45,6 @@ public:
         precompute_next_uses();
     }
 
-    // Rule of 5
-    // 1. Destructor
-    ~IdealCache() = default;
-
-    // 2. Copy constructor
-    IdealCache(const IdealCache&) = delete;
-
-    // 3. Copy assignment
-    IdealCache& operator=(const IdealCache&) = delete;
-
-    // 4. Move constructor
-    IdealCache(IdealCache&&) = default;
-
-    // 5. Move assignment
-    IdealCache& operator=(IdealCache&&) = default;
-
     size_t run();
     size_t hits() const { return hits_; }
     size_t size() const { return cache_.size(); }
