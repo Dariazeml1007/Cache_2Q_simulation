@@ -78,13 +78,14 @@ public:
     Iterator end() { return cache_map_.end(); }
     ConstIterator end() const { return cache_map_.end(); }
 
-    // Хелперы для доступа к данным через итератор
+
     ValueType& value(Iterator it) { return it->second.first->second; }
     const ValueType& value(ConstIterator it) const { return it->second.first->second; }
     const KeyType& key(Iterator it) const { return it->first; }
 
-    // Для обратной совместимости можно оставить старый метод
-    std::pair<bool, ValueType> get_old(const KeyType& key) {
+
+    std::pair<bool, ValueType> get_old(const KeyType& key)
+    {
         auto [it, found] = get(key);
         return {found, value(it)};
     }
